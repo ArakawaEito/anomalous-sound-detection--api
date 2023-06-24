@@ -139,7 +139,8 @@ def hdf(file_newhdf, dir_newNpy):
 
     with h5py.File(file_newhdf, mode='w') as f:  
         file_basename=current_app.config["BASEHDF"]
-        npyFiles = glob.glob(f'{dir_newNpy}/*')
+        npyFiles = os.path.join(dir_newNpy, "*.npy")
+        npyFiles = glob.glob(npyFiles)
         print('全npyファイル数:', len(npyFiles))  
         
         """ここの処理に時間が係るので実行しない(精度が落ちる可能性あり)
@@ -166,7 +167,10 @@ def hdf(file_newhdf, dir_newNpy):
         f.create_dataset(f'{file_basename}_files', baseShape, dtype = np.float32) 
         f.create_dataset(f'{file_basename}_labels', (len(npyFiles),), dtype = 'S50') 
 
-        f[f'{file_basename}_labels'][...] = [i.split('\\')[-1].split('.')[0].encode(encoding="ascii", errors = "ignore") for i in npyFiles]
+
+
+        f[f'{file_basename}_labels'][...] = [os.path.splitext(os.path.basename(i))[0].encode(encoding="ascii", errors = "ignore") for i in npyFiles]
+
         for i, v in enumerate(npyFiles):
             f[f'{file_basename}_files'][i, ...] = MonoToColor(np.load(v))
                 
